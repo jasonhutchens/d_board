@@ -2,8 +2,9 @@
 //         Copyright (c) 2006 - 2007 Jason Hutchens and Paul Geerts.          //
 //==============================================================================
 
+#include <dist.hpp>
+
 #include <cassert>
-#include "dist.h"
 
 //------------------------------------------------------------------------------
 Dist::Dist( const char * alphabet )

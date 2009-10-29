@@ -2,10 +2,11 @@
 //         Copyright (c) 2006 - 2007 Jason Hutchens and Paul Geerts.          //
 //==============================================================================
 
+#include <brain.hpp>
+#include <trie.hpp>
+#include <dist.hpp>
+
 #include <cassert>
-#include "brain.h"
-#include "trie.h"
-#include "dist.h"
 
 namespace
 {

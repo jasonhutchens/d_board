@@ -2,10 +2,11 @@
 //         Copyright (c) 2006 - 2007 Jason Hutchens and Paul Geerts.          //
 //==============================================================================
 
+#include <trie.hpp>
+#include <node.hpp>
+#include <dist.hpp>
+
 #include <cassert>
-#include "trie.h"
-#include "node.h"
-#include "dist.h"
 
 //------------------------------------------------------------------------------
 Trie::Trie( unsigned int order, const char * alphabet, char escape )

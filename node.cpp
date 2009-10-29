@@ -2,9 +2,10 @@
 //         Copyright (c) 2006 - 2007 Jason Hutchens and Paul Geerts.          //
 //==============================================================================
 
+#include <node.hpp>
+#include <dist.hpp>
+
 #include <cassert>
-#include "node.h"
-#include "dist.h"
 
 //------------------------------------------------------------------------------
 Node::Node( char symbol )
