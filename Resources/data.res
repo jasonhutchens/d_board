@@ -6,6 +6,10 @@ Texture developer
 {
     filename=rockethands.png
 }
+Texture paper
+{
+    filename=paper.png
+}
 Font menu
 {
     filename=menu.fnt
@@ -13,6 +17,10 @@ Font menu
 Font tiny
 {
     filename=tiny.fnt
+}
+Font love
+{
+    filename=love.fnt
 }
 Sprite title
 {
@@ -25,4 +33,10 @@ Sprite developer
     texture=developer
     rect=0,0,1024,768
     hotspot=512,384
+}
+Sprite paper
+{
+    texture=paper
+    rect=0,0,718,1024
+    hotspot=359,512
 }
