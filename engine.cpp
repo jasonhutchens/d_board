@@ -150,7 +150,11 @@ Engine::start()
     {
         _loadData();
         init();
+#ifdef _DEBUG
+        switchContext( STATE_GAME );
+#else
         switchContext( STATE_SPLASH );
+#endif
         m_hge->System_Start();
     }
     else

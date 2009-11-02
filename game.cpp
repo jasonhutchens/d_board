@@ -7,6 +7,7 @@
 #include <viewport.hpp>
 
 #include <hgeresource.h>
+#include <hgefont.h>
 
 #include <algorithm>
 #include <set>
@@ -75,11 +76,22 @@ void
 Game::render()
 {
     hgeResourceManager * rm( Engine::rm() );
-    hgeFont* font = Engine::rm()->GetFont("menu");
+    hgeFont * font( rm->GetFont( "love" ) );
     ViewPort * vp( Engine::vp() );
-    
+
+    hgeSprite * paper( rm->GetSprite( "paper" ) );
+
     vp->setTransform();
 
+    paper->RenderEx( 0, 50, 0.0f, 0.15f );
+
+    font->SetColor( 0xF0000000 );
+    font->SetScale( 0.1f );
+    for ( int i = 0; i < 10; ++i )
+    {
+        font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
+            "All *WORK* and no _PLAY_ makes 'Jack' a dull boy!?!");
+    }
 }
 
 //------------------------------------------------------------------------------
