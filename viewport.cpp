@@ -188,17 +188,25 @@ ViewPort::restore()
         height = GetSystemMetrics( SM_CYSCREEN );
     }
     float ratio( static_cast<float>(width)/static_cast<float>(height) );
-    if ( ratio > 16.0f / 9.0f )
+    float desired( 0.0f );
+    if ( desired <= 0.0f )
+    {
+        m_screen.x = static_cast<float>( width );
+        m_screen.y = static_cast<float>( height );
+        m_dx = 0.0;
+        m_dy = 0.0f;
+    }
+    else if ( ratio > desired )
     {
         m_screen.y = static_cast<float>( height );
-        m_screen.x = ( 16.0f * m_screen.y ) / 9.0f;
+        m_screen.x = m_screen.y * desired;
         m_dx = 0.5f * ( static_cast<float>( width ) - m_screen.x );
         m_dy = 0.0f;
     }
     else
     {
         m_screen.x = static_cast<float>( width );
-        m_screen.y = ( 9.0f * m_screen.x ) / 16.0f;
+        m_screen.y = m_screen.x / desired;
         m_dx = 0.0f;
         m_dy = 0.5f * ( static_cast<float>( height ) - m_screen.y );
     }
