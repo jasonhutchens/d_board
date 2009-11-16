@@ -125,7 +125,7 @@ bool Dist::normalised() const
         total += m_item[i].m_value;
     }
 
-    return total < 1.000001f && total > 0.999999f;
+    return total < 1.001f && total > 0.999f;
 }
 
 //------------------------------------------------------------------------------

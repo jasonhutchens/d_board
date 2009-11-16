@@ -132,8 +132,10 @@ Game::render()
 //      font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
 //                    "%c", byte );
     }
-    font->printf( -50.0f, -9.5f + 4.75f, HGETEXT_LEFT,
+    font->printf( -30.0f, -9.5f + 4.75f, HGETEXT_LEFT,
                   m_brain.getBuffer() );
+    font->printf( -30.0f, -9.5f + 9.5f, HGETEXT_LEFT,
+                  m_brain.predictFuture() );
 
     // draw what we predict we'll write next
 }
