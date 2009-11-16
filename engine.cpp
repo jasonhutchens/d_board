@@ -515,8 +515,7 @@ Engine::_update()
 
     if ( m_state == STATE_GAME )
     {
-        if ( m_hge->Input_KeyDown( HGEK_P ) ||
-             m_hge->Input_KeyDown( HGEK_ESCAPE ) )
+        if ( m_hge->Input_KeyDown( HGEK_ESCAPE ) )
         {
             m_handled_key = true;
             m_paused = ! m_paused;
@@ -530,7 +529,7 @@ Engine::_update()
     }
 
 #ifdef _DEBUG
-    if ( m_hge->Input_KeyDown( HGEK_O ) )
+    if ( m_hge->Input_KeyDown( HGEK_HOME ) )
     {
         m_handled_key = true;
         int flags( b2DebugDraw::e_shapeBit |

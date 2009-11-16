@@ -7,6 +7,7 @@
 #include <dist.hpp>
 
 #include <cassert>
+#include <cstring>
 
 namespace
 {
@@ -212,6 +213,12 @@ char Brain::remove()
 const char * Brain::getBuffer()
 {
     return m_buffer;
+}
+
+//------------------------------------------------------------------------------
+bool Brain::isValid( char symbol )
+{
+    return symbol != '\0' && strchr( UNIVERSE, symbol ) != 0;
 }
 
 //------------------------------------------------------------------------------

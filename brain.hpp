@@ -56,6 +56,9 @@ public:
     // Return the buffer of text the user has entered. Won't be NULL ever.
     const char * getBuffer();
 
+    // Return a boolean indicating whether the specified symbol can be used.
+    bool isValid( char symbol);
+
     // Eat the current buffer, as if the user had entered a newline. This clears
     // the contents of the buffer and does other stuff too.
     void accept();

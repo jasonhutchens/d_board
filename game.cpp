@@ -77,7 +77,24 @@ Game::update( float dt )
                       ? Brain::MODE_SHIFT : Brain::MODE_NORMAL );
     m_brain.setMode( static_cast< Brain::Mode >( ctrl + shift ) );
 
-    // Implement normal typing and backspace
+    // Implement normal typing
+    char byte( hge->Input_GetChar() );
+    if ( m_brain.isValid( byte ) )
+    {
+        m_brain.select( byte );
+    }
+    // Backspace
+    if ( hge->Input_GetKey() == HGEK_BACKSPACE &&
+         m_brain.getBuffer()[0] != '\0' )
+    {
+        m_brain.remove();
+    }
+    // Return
+    if ( hge->Input_GetKey() == HGEK_ENTER )
+    {
+        // TODO: store previous buffer so we can render it, etc.
+        m_brain.accept();
+    }
 
     return false;
 }
@@ -115,6 +132,8 @@ Game::render()
 //      font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
 //                    "%c", byte );
     }
+    font->printf( -50.0f, -9.5f + 4.75f, HGETEXT_LEFT,
+                  m_brain.getBuffer() );
 
     // draw what we predict we'll write next
 }
