@@ -5,8 +5,8 @@
 
 #pragma once
 
+#include <brain.hpp>
 #include <context.hpp>
-#include <list>
 
 class hgeSprite;
 
@@ -28,6 +28,7 @@ class Game : public Context
     virtual void render();
 
   private:
+    Brain m_brain;
 };
 
 #endif

@@ -15,7 +15,8 @@
 //==============================================================================
 Game::Game()
     :
-    Context()
+    Context(),
+    m_brain( 5 )
 {
 }
 
@@ -46,6 +47,7 @@ Game::init()
     vp->setAngle( 0.0f );
     vp->setScale( 10.0f );
     
+    m_brain.clear();
 }
 
 //------------------------------------------------------------------------------
@@ -68,6 +70,15 @@ Game::update( float dt )
         return false;
     }
 
+    // Call m_brain.setMode based on modifier keys / buttons
+    Brain::Mode ctrl( hge->Input_GetKeyState( HGEK_CTRL )
+                      ? Brain::MODE_ALT : Brain::MODE_NORMAL );
+    Brain::Mode shift( hge->Input_GetKeyState( HGEK_SHIFT )
+                      ? Brain::MODE_SHIFT : Brain::MODE_NORMAL );
+    m_brain.setMode( static_cast< Brain::Mode >( ctrl + shift ) );
+
+    // Implement normal typing and backspace
+
     return false;
 }
 
@@ -87,11 +98,25 @@ Game::render()
 
     font->SetColor( 0xF0000000 );
     font->SetScale( 0.1f );
-    for ( int i = 0; i < 10; ++i )
+
+    // draw what we've written this far: m_brain.getBuffer();
+
+    // draw the cursor. show a dial of characters.
+    const char * alphabet( m_brain.getAlphabet() );
+    for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
     {
-        font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
-            "All *WORK* and no _PLAY_ makes 'Jack' a dull boy!?!");
+        char byte( alphabet[i] );
+        if ( byte == ' ' )
+        {
+            byte = '^';
+        }
+        font->printf( -50.0f, -9.5f + 2.5f * i, HGETEXT_LEFT,
+                      "%c", byte );
+//      font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
+//                    "%c", byte );
     }
+
+    // draw what we predict we'll write next
 }
 
 //------------------------------------------------------------------------------
