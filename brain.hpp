@@ -38,6 +38,7 @@ public:
     // come next, including the one at the insertion point.
     const char * predictFuture( double probability = 0.1f );
     const char * predictFuture( char selected, double probability = 0.1f );
+    const double * getProbs();
 
     // Just return the prediction from the trie.
     const Dist * predict();
@@ -69,4 +70,5 @@ private:
     unsigned int m_size;
     Trie * m_trie;
     char * m_tmp;
+    double * m_probs;
 };

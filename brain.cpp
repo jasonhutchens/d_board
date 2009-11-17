@@ -32,11 +32,13 @@ Brain::Brain( unsigned int order = 5 )
     m_buffer( 0 ),
     m_size( 0 ),
     m_trie( 0 ),
-    m_tmp( 0 )
+    m_tmp( 0 ),
+    m_probs( 0 )
 {
     m_buffer = new char[ MAX_SIZE ];
     m_trie = new Trie( order, UNIVERSE, ESCAPE );
     m_tmp = new char[ 256 ];
+    m_probs = new double[ 256 ];
     assert( m_buffer );
     m_buffer[0] = '\0';
     for ( unsigned int i = 0; i < m_trie->getOrder(); ++i )
@@ -51,6 +53,7 @@ Brain::~Brain()
     delete [] m_buffer;
     delete m_trie;
     delete [] m_tmp;
+    delete [] m_probs;
 }
 
 //------------------------------------------------------------------------------
@@ -113,6 +116,7 @@ const char * Brain::predictChoice( double probability )
         {
             break;
         }
+        m_probs[index] = dist->get(i).m_value;
         m_tmp[index++] = dist->get(i).m_symbol;
     }
     m_tmp[index] = '\0';
@@ -146,6 +150,7 @@ const char * Brain::predictFuture( char selected, double probability )
         total *= dist->get(0).m_value;
         if ( total >= probability )
         {
+            m_probs[index] = total;
             m_tmp[index] = dist->get(0).m_symbol;
             m_trie->walk( m_tmp[index++] );
         }
@@ -153,6 +158,12 @@ const char * Brain::predictFuture( char selected, double probability )
     m_trie->swapHand();
     m_tmp[index] = '\0';
     return m_tmp;
+}
+
+//------------------------------------------------------------------------------
+const double * Brain::getProbs()
+{
+    return m_probs;
 }
 
 //------------------------------------------------------------------------------

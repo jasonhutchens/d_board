@@ -16,7 +16,7 @@
 Game::Game()
     :
     Context(),
-    m_brain( 5 )
+    m_brain( 8 )
 {
 }
 
@@ -116,26 +116,37 @@ Game::render()
     font->SetColor( 0xF0000000 );
     font->SetScale( 0.1f );
 
-    // draw what we've written this far: m_brain.getBuffer();
+    unsigned int row( 0 );
 
-    // draw the cursor. show a dial of characters.
+    // draw what we've written this far: m_brain.getBuffer();
+    const char * past( m_brain.getBuffer() );
+    for ( unsigned int i = 0; i < strlen( past ); ++i )
+    {
+        char byte( past[i] );
+        font->printf( -30.0f + 2.0f * row, 0, HGETEXT_LEFT, "%c", byte );
+        row += 1;
+    }
+
+    // draw the cursor. show a dial of characters
     const char * alphabet( m_brain.getAlphabet() );
     for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
     {
         char byte( alphabet[i] );
-        if ( byte == ' ' )
-        {
-            byte = '^';
-        }
         font->printf( -50.0f, -9.5f + 2.5f * i, HGETEXT_LEFT,
                       "%c", byte );
-//      font->printf( -50.0f, -9.5f + 4.75f * i, HGETEXT_LEFT,
-//                    "%c", byte );
     }
-    font->printf( -30.0f, -9.5f + 4.75f, HGETEXT_LEFT,
-                  m_brain.getBuffer() );
-    font->printf( -30.0f, -9.5f + 9.5f, HGETEXT_LEFT,
-                  m_brain.predictFuture() );
+
+    // draw a prediction of what we're likely to write next
+    const char * future( m_brain.predictFuture() );
+    const double * probs( m_brain.getProbs() );
+    for ( unsigned int i = 0; i < strlen( future ); ++i )
+    {
+        char byte( future[i] );
+        hgeColorRGB color( 0.0f, 0.0f, 0.0f, probs[i] );
+        font->SetColor( color.GetHWColor() );
+        font->printf( -30.0f + 2.0f * row, 0, HGETEXT_LEFT, "%c", byte );
+        row += 1;
+    }
 
     // draw what we predict we'll write next
 }
