@@ -16,7 +16,8 @@
 Game::Game()
     :
     Context(),
-    m_brain( 8 )
+    m_brain( 8 ),
+    m_lines()
 {
 }
 
@@ -92,7 +93,7 @@ Game::update( float dt )
     // Return
     if ( hge->Input_GetKey() == HGEK_ENTER )
     {
-        // TODO: store previous buffer so we can render it, etc.
+        m_lines.push_back( m_brain.getBuffer() );
         m_brain.accept();
     }
 
@@ -117,24 +118,49 @@ Game::render()
     font->SetScale( 0.1f );
 
     unsigned int row( 0 );
+    unsigned int col( 0 );
+
+    // draw the lines that we've entered so far
+    for( std::vector< std::string >::iterator i = m_lines.begin();
+         i != m_lines.end(); ++i )
+    {
+        const char * line( i->c_str() );
+        for ( unsigned int j = 0; j < strlen( line ); ++j )
+        {
+            char byte( line[j] );
+            font->printf( -50.0f + 2.0f * row,
+                          -9.5f + 4.75f * col,
+                          HGETEXT_LEFT, "%c", byte );
+            row += 1;
+            if ( row > 50 ) row = 50;
+        }
+        col += 1;
+        row = 0;
+    }
 
     // draw what we've written this far: m_brain.getBuffer();
     const char * past( m_brain.getBuffer() );
     for ( unsigned int i = 0; i < strlen( past ); ++i )
     {
         char byte( past[i] );
-        font->printf( -30.0f + 2.0f * row, 0, HGETEXT_LEFT, "%c", byte );
+        font->printf( -50.0f + 2.0f * row,
+                      -9.5f + 4.75f * col,
+                      HGETEXT_LEFT, "%c", byte );
         row += 1;
+        if ( row > 50 ) row = 50;
     }
 
-    // draw the cursor. show a dial of characters
+    // draw the cursor, showing a dial of characters
     const char * alphabet( m_brain.getAlphabet() );
     for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
     {
         char byte( alphabet[i] );
-        font->printf( -50.0f, -9.5f + 2.5f * i, HGETEXT_LEFT,
-                      "%c", byte );
+        font->printf( -50.0f + 2.0f * row,
+                      -9.5f + 4.75f * col,
+                      HGETEXT_LEFT, "%c", byte );
     }
+    row += 1;
+    if ( row > 50 ) row = 50;
 
     // draw a prediction of what we're likely to write next
     const char * future( m_brain.predictFuture() );
@@ -144,8 +170,11 @@ Game::render()
         char byte( future[i] );
         hgeColorRGB color( 0.0f, 0.0f, 0.0f, probs[i] );
         font->SetColor( color.GetHWColor() );
-        font->printf( -30.0f + 2.0f * row, 0, HGETEXT_LEFT, "%c", byte );
+        font->printf( -50.0f + 2.0f * row,
+                      -9.5f + 4.75f * col,
+                      HGETEXT_LEFT, "%c", byte );
         row += 1;
+        if ( row > 50 ) row = 50;
     }
 
     // draw what we predict we'll write next

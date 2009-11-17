@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <vector>
+#include <string>
+
 #include <brain.hpp>
 #include <context.hpp>
 
@@ -29,6 +32,7 @@ class Game : public Context
 
   private:
     Brain m_brain;
+    std::vector< std::string > m_lines;
 };
 
 #endif
