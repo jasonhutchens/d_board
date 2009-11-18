@@ -120,6 +120,35 @@ Game::update( float dt )
         m_dial.push_back( alphabet[i] );
     }
 
+    // Implement cursor keys
+    if ( hge->Input_GetKey() == HGEK_UP )
+    {
+        m_current[m_brain.getMode()] -= 1;
+        if ( m_current[m_brain.getMode()] < 0 )
+        {
+            m_current[m_brain.getMode()] = m_dial.size() - 1;
+        }
+    }
+    if ( hge->Input_GetKey() == HGEK_DOWN )
+    {
+        m_current[m_brain.getMode()] += 1;
+        if ( m_current[m_brain.getMode()] >= m_dial.size() )
+        {
+            m_current[m_brain.getMode()] = 0;
+        }
+    }
+    if ( hge->Input_GetKey() == HGEK_RIGHT )
+    {
+        m_brain.select( m_dial[m_current[m_brain.getMode()]] );
+        _clearCurrent();
+    }
+    if ( hge->Input_GetKey() == HGEK_LEFT &&
+         m_brain.getBuffer()[0] != '\0' )
+    {
+        m_brain.remove();
+        _clearCurrent();
+    }
+
     return false;
 }
 
@@ -215,14 +244,15 @@ Game::render()
         if ( row > 50 ) row = 50;
     }
 
+    // TODO: Cursor controls
+    // TODO: Gamepad controls
     // TODO: Cursor-relative versus paper-relative
     // TODO: Feed paper in
     // TODO: Move paper when shift pressed
     // TODO: Sounds!
-    // TODO: Save content to a file.
-    // TODO: Train model.
-    // TODO: Gamepad controls.
-    // TODO: Hook up Wiimote.
+    // TODO: Save content to a file
+    // TODO: Train model
+    // TODO: Hook up Wiimote
 }
 
 //------------------------------------------------------------------------------
