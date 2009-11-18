@@ -10,6 +10,10 @@ Texture paper
 {
     filename=paper.png
 }
+Texture cursor
+{
+    filename=cursor.png
+}
 Font menu
 {
     filename=menu.fnt
@@ -39,4 +43,10 @@ Sprite paper
     texture=paper
     rect=0,0,718,1024
     hotspot=359,512
+}
+Sprite cursor
+{
+    texture=cursor
+    rect=0,0,128,128
+    hotspot=64,64
 }

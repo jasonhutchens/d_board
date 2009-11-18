@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <set>
+#include <cmath>
 
 //==============================================================================
 Game::Game()
@@ -109,7 +110,7 @@ Game::update( float dt )
     // Populate the dial
     m_dial.clear();
     const char * choice( m_brain.predictChoice() );
-    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 2; ++i )
+    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 3; ++i )
     {
         m_dial.push_back( choice[i] );
     }
@@ -171,12 +172,15 @@ Game::render()
     }
 
     // draw the cursor, showing a dial of characters
-    if ( m_dial.size() < 7 )
+    hgeSprite * cursor( rm->GetSprite( "cursor" ) );
+    cursor->RenderEx( -50.0f + 2.0f * row + 1.0f, -9.5f + 4.75f * col + 5.5f,
+                      0.0f, 0.06f, 0.13f );
+    if ( m_dial.size() < 5 )
     {
         return;
     }
     int current( m_current[m_brain.getMode()] );
-    for ( int offset = -3; offset <= 3; ++offset )
+    for ( int offset = -1; offset <= 4; ++offset )
     {
         int index( current + offset );
         if ( index < 0 )
@@ -187,9 +191,13 @@ Game::render()
         {
             index -= m_dial.size();
         }
-        font->printf( -50.0f + 2.0f * row,
-                      -9.5f + 4.75f * col + 2.5f * offset,
-                      HGETEXT_LEFT, "%c", m_dial[index] );
+        hgeSprite * sprite( font->GetSprite( m_dial[index] ) );
+        hgeColorRGB color( 1.0f, 1.0f, 1.0f, ( offset == 0 ) ? 1.0f : 0.8f );
+        sprite->SetColor( color.GetHWColor() );
+        float scale( 1.0f );
+        sprite->RenderEx( -50.0f + 2.0f * row,
+                          -9.5f + 4.75f * col + 2.5f * offset,
+                          0.0f, 0.1f, 0.1f * scale );
     }
     row += 1;
 
