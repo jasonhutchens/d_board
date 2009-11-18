@@ -31,8 +31,12 @@ class Game : public Context
     virtual void render();
 
   private:
+    void _clearCurrent();
+
     Brain m_brain;
     std::vector< std::string > m_lines;
+    std::vector< char > m_dial;
+    int m_current[4];
 };
 
 #endif
