@@ -13,10 +13,10 @@ namespace
 {
     const unsigned int MAX_SIZE( 65536 );
     const char * ALPHABET[] = {
-        " abcdefghijklmnopqrstuvwxyz",
-        " ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        " 0123456789",
-        " ,.?!;:/-_()'\"$@#%&*",
+        "abcdefghijklmnopqrstuvwxyz ",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ ",
+        "0123456789 ",
+        "?!.,@#$/-_:;'\"()%&* ",
     };
     const char * UNIVERSE = "abcdefghijklmnopqrstuvwxyz"
                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

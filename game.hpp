@@ -32,6 +32,8 @@ class Game : public Context
 
   private:
     void _clearCurrent();
+    bool _inPrevious( char item, int num );
+    bool _inNext( int index, int num );
 
     Brain m_brain;
     std::vector< std::string > m_lines;

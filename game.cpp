@@ -17,7 +17,7 @@
 Game::Game()
     :
     Context(),
-    m_brain( 13 ),
+    m_brain( 7 ),
     m_lines(),
     m_dial(),
     m_current()
@@ -107,17 +107,33 @@ Game::update( float dt )
         _clearCurrent();
     }
 
-    // Populate the dial
+    float threshold( 1.0f / strlen( m_brain.getAlphabet() ) );
+
+    // Populate the dial without repeating the same symbol in a sliding window
     m_dial.clear();
-    const char * choice( m_brain.predictChoice() );
-    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 3; ++i )
+    const char * choice( m_brain.predictChoice( threshold ) );
+    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 4; ++i )
     {
         m_dial.push_back( choice[i] );
     }
     const char * alphabet( m_brain.getAlphabet() );
     for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
     {
+        // Don't add if it exists in the previous 5.
+        if ( _inPrevious( alphabet[i], 5 ) )
+        {
+            continue;
+        }
         m_dial.push_back( alphabet[i] );
+    }
+    // And now pop off elements that appear in the next 5.
+    for ( int offset = 1; offset <= 5; ++offset )
+    {
+        int index( m_dial.size() - offset );
+        if ( _inNext( index, 5 ) )
+        {
+            m_dial.erase( m_dial.begin() + index );
+        }
     }
 
     // Implement cursor keys
@@ -244,15 +260,16 @@ Game::render()
         if ( row > 50 ) row = 50;
     }
 
-    // TODO: Cursor controls
-    // TODO: Gamepad controls
+    // TODO: Forward predictions for all items in the dial
+    // TODO: Train model
     // TODO: Cursor-relative versus paper-relative
     // TODO: Feed paper in
     // TODO: Move paper when shift pressed
     // TODO: Sounds!
+    // TODO: Gamepad controls
     // TODO: Save content to a file
-    // TODO: Train model
     // TODO: Hook up Wiimote
+    // TODO: Introduction tutorial
 }
 
 //------------------------------------------------------------------------------
@@ -264,6 +281,33 @@ void Game::_clearCurrent()
     m_current[Brain::MODE_SHIFT] = 0;
     m_current[Brain::MODE_ALT] = 0;
     m_current[Brain::MODE_BOTH] = 0;
+}
+
+//------------------------------------------------------------------------------
+bool Game::_inPrevious( char item, int num )
+{
+    for ( int i = m_dial.size() - 1; i >= 0 && num > 0; --i )
+    {
+        num -= 1;
+        if ( m_dial[i] == item )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+bool Game::_inNext( int index, int num )
+{
+    for ( int i = 0; i <= num; ++i )
+    {
+        if ( m_dial[index] == m_dial[( index + i + 1 ) % m_dial.size()] )
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 //==============================================================================
