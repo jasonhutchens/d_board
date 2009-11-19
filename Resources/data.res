@@ -1,3 +1,35 @@
+Sound bell
+{
+    filename=bell.wav
+}
+Sound letter
+{
+    filename=letter.wav
+}
+Sound load
+{
+    filename=load.wav
+}
+Sound remove
+{
+    filename=remove.wav
+}
+Sound return
+{
+    filename=return.wav
+}
+Sound shift
+{
+    filename=shift.wav
+}
+Sound shift_letter
+{
+    filename=shift_letter.wav
+}
+Sound space
+{
+    filename=space.wav
+}
 Texture title
 {
     filename=title.png

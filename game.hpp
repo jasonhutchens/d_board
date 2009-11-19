@@ -39,6 +39,8 @@ class Game : public Context
     std::vector< std::string > m_lines;
     std::vector< char > m_dial;
     int m_current[4];
+    int m_row;
+    int m_col;
 };
 
 #endif

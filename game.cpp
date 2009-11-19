@@ -20,7 +20,9 @@ Game::Game()
     m_brain( 7 ),
     m_lines(),
     m_dial(),
-    m_current()
+    m_current(),
+    m_row( 0 ),
+    m_col( 0 )
 {
 }
 
@@ -56,6 +58,9 @@ Game::init()
     m_dial.clear();
 
     _clearCurrent();
+
+    m_row = 0;
+    m_col = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -72,6 +77,7 @@ Game::update( float dt )
     const Controller & pad( Engine::instance()->getController() );
     HGE * hge( Engine::hge() );
     ViewPort * vp( Engine::vp() );
+    hgeResourceManager * rm( Engine::rm() );
 
     if ( Engine::instance()->isPaused() )
     {
@@ -91,6 +97,15 @@ Game::update( float dt )
     {
         m_brain.select( byte );
         _clearCurrent();
+        if ( byte == ' ' )
+        {
+            hge->Effect_PlayEx( rm->GetEffect( "space" ), 15 );
+        }
+        else
+        {
+            hge->Effect_Play( rm->GetEffect( "letter" ) );
+        }
+        m_row += 1;
     }
     // Backspace
     if ( hge->Input_GetKey() == HGEK_BACKSPACE &&
@@ -98,6 +113,7 @@ Game::update( float dt )
     {
         m_brain.remove();
         _clearCurrent();
+        m_row -= 1;
     }
     // Return
     if ( hge->Input_GetKey() == HGEK_ENTER )
@@ -105,6 +121,13 @@ Game::update( float dt )
         m_lines.push_back( m_brain.getBuffer() );
         m_brain.accept();
         _clearCurrent();
+        hge->Effect_Play( rm->GetEffect( "return" ) );
+        m_row = 0;
+        m_col += 1;
+    }
+    if ( m_row == 40 )
+    {
+        hge->Effect_Play( rm->GetEffect( "bell" ) );
     }
 
     float threshold( 1.0f / strlen( m_brain.getAlphabet() ) );
@@ -155,14 +178,29 @@ Game::update( float dt )
     }
     if ( hge->Input_GetKey() == HGEK_RIGHT )
     {
-        m_brain.select( m_dial[m_current[m_brain.getMode()]] );
+        char byte( m_dial[m_current[m_brain.getMode()]] );
+        m_brain.select( byte );
         _clearCurrent();
+        m_row += 1;
+        if ( byte == ' ' )
+        {
+            hge->Effect_PlayEx( rm->GetEffect( "space" ), 15 );
+        }
+        else if ( byte >= 'A' && byte <= 'Z' )
+        {
+            hge->Effect_Play( rm->GetEffect( "shift_letter" ) );
+        }
+        else
+        {
+            hge->Effect_Play( rm->GetEffect( "letter" ) );
+        }
     }
     if ( hge->Input_GetKey() == HGEK_LEFT &&
          m_brain.getBuffer()[0] != '\0' )
     {
         m_brain.remove();
         _clearCurrent();
+        m_row -= 1;
     }
 
     return false;
@@ -260,12 +298,12 @@ Game::render()
         if ( row > 50 ) row = 50;
     }
 
+    // TODO: Toggle between cursor and d-board - make cursor flash
     // TODO: Forward predictions for all items in the dial
     // TODO: Train model
     // TODO: Cursor-relative versus paper-relative
     // TODO: Feed paper in
     // TODO: Move paper when shift pressed
-    // TODO: Sounds!
     // TODO: Gamepad controls
     // TODO: Save content to a file
     // TODO: Hook up Wiimote
