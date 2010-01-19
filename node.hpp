@@ -19,6 +19,6 @@ public:
 private:
     char m_symbol;
     unsigned char m_num;
-    unsigned short m_count;
+    unsigned int m_count;
     Node ** m_child;
 };

@@ -97,7 +97,7 @@ Node * Node::observe( char symbol, char escape )
         m_child = tmp;
     }
 
-    assert( child->m_count < 65535 );
+//  assert( child->m_count < 65535 );
 
     child->m_count += 1;
 

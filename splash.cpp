@@ -43,7 +43,7 @@ Splash::update( float dt )
 {
     if ( m_timer > 5.3f )
     {
-        Engine::instance()->switchContext( STATE_MENU );
+        Engine::instance()->switchContext( STATE_GAME );
     }
 
     m_timer += dt;

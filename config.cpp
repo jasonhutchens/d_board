@@ -5,6 +5,11 @@
 
 #include <hge.h>
 
+namespace
+{
+    static const char * FILENAME( "dboard" );
+}
+
 //------------------------------------------------------------------------------
 Config::Config()
     :
@@ -16,15 +21,7 @@ Config::Config()
 #else
     fullScreen( false ),
 #endif
-    sound( true ),
-    userName( "Lloyd" ),
-    menu( 1 ),
-#ifdef _DEBUG
-    vibrate( false ),
-#else
-    vibrate( true ),
-#endif
-    leaderboard( false )
+    sound( true )
 {
 }
 
@@ -37,36 +34,25 @@ Config::~Config()
 void
 Config::init()
 {
-    screenWidth = Engine::hge()->Ini_GetInt( "kranzky", "width",
+    screenWidth = Engine::hge()->Ini_GetInt( FILENAME, "width",
                                              screenWidth );
-    screenHeight = Engine::hge()->Ini_GetInt( "kranzky","height",
+    screenHeight = Engine::hge()->Ini_GetInt( FILENAME,"height",
                                               screenHeight );
-    bpp = Engine::hge()->Ini_GetInt( "kranzky","bpp", bpp );
-    fullScreen = Engine::hge()->Ini_GetInt( "kranzky", "fullscreen",
+    bpp = Engine::hge()->Ini_GetInt( FILENAME,"bpp", bpp );
+    fullScreen = Engine::hge()->Ini_GetInt( FILENAME, "fullscreen",
                                             fullScreen ? 1 : 0 ) == 1;
-    sound = Engine::hge()->Ini_GetInt( "kranzky", "sound", sound ? 1 : 0 ) == 1;
-    userName = Engine::hge()->Ini_GetString( "kranzky", "username",
-                                             userName.c_str() );
-    menu = Engine::hge()->Ini_GetInt( "kranzky", "menu", menu );
-    vibrate = Engine::hge()->Ini_GetInt( "kranzky", "vibrate",
-                                         vibrate ? 1 : 0 ) == 1;
-    leaderboard = Engine::hge()->Ini_GetInt( "kranzky", "leaderboard",
-                                             leaderboard ? 1 : 0 ) == 1;
+    sound = Engine::hge()->Ini_GetInt( FILENAME, "sound", sound ? 1 : 0 ) == 1;
 }
 
 //------------------------------------------------------------------------------
 void
 Config::fini()
 {
-    Engine::hge()->Ini_SetInt( "kranzky", "width", screenWidth );
-    Engine::hge()->Ini_SetInt( "kranzky","height", screenHeight );
-    Engine::hge()->Ini_SetInt( "kranzky","bpp", bpp );
-    Engine::hge()->Ini_SetInt( "kranzky", "fullscreen", fullScreen ? 1 : 0 );
-    Engine::hge()->Ini_SetInt( "kranzky", "sound", sound ? 1 : 0 );
-    Engine::hge()->Ini_SetString( "kranzky", "username", userName.c_str() );
-    Engine::hge()->Ini_SetInt( "kranzky", "menu", menu );
-    Engine::hge()->Ini_SetInt( "kranzky", "vibrate", vibrate ? 1 : 0 );
-    Engine::hge()->Ini_SetInt( "kranzky", "leaderboard", leaderboard ? 1 : 0 );
+    Engine::hge()->Ini_SetInt( FILENAME, "width", screenWidth );
+    Engine::hge()->Ini_SetInt( FILENAME,"height", screenHeight );
+    Engine::hge()->Ini_SetInt( FILENAME,"bpp", bpp );
+    Engine::hge()->Ini_SetInt( FILENAME, "fullscreen", fullScreen ? 1 : 0 );
+    Engine::hge()->Ini_SetInt( FILENAME, "sound", sound ? 1 : 0 );
 }
 
 //==============================================================================

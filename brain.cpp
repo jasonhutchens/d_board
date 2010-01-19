@@ -91,15 +91,29 @@ void Brain::clear()
 void Brain::learn( const char * blob )
 {
     accept();
+    bool use( true );
+    unsigned int offset( 0 );
     for ( unsigned int i = 0; blob[i] != '\0'; ++i )
     {
         if ( blob[i] == '\r' || blob[i] == '\n' )
         {
-            accept();
+            if ( use )
+            {
+                for ( unsigned int k = offset; k < i; ++k )
+                {
+                    m_trie->observe( blob[k] );
+                }
+                accept();
+            }
+            offset = i + 1;
+            use = true;
         }
         else
         {
-            m_trie->observe( blob[i] );
+            if ( use )
+            {
+                use = m_trie->includes( blob[i] );
+            }
         }
     }
     accept();

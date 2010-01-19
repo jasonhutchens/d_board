@@ -12,12 +12,14 @@
 #include <algorithm>
 #include <set>
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 //==============================================================================
 Game::Game()
     :
     Context(),
-    m_brain( 7 ),
+    m_brain( 5 ),
     m_lines(),
     m_dial(),
     m_current(),
@@ -61,6 +63,24 @@ Game::init()
 
     m_row = 0;
     m_col = 0;
+
+    /*
+     * Load the corpus and train the model. This should happen in a thread so we
+     * can display a progress bar or something.
+     */
+    std::fstream file( "corpus.txt", std::ios::in |
+                                     std::ios::binary |
+                                     std::ios::ate );
+    if ( file.is_open() )
+    {
+        std::ifstream::pos_type size( file.tellg() );
+        char * blob( new char [size] );
+        file.seekg( 0, std::ios::beg );
+        file.read( blob, size );
+        file.close();
+        m_brain.learn( blob );
+        delete [] blob;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -171,7 +191,7 @@ Game::update( float dt )
     if ( hge->Input_GetKey() == HGEK_DOWN )
     {
         m_current[m_brain.getMode()] += 1;
-        if ( m_current[m_brain.getMode()] >= m_dial.size() )
+        if ( m_current[m_brain.getMode()] >= static_cast<int>(m_dial.size()) )
         {
             m_current[m_brain.getMode()] = 0;
         }
@@ -270,7 +290,7 @@ Game::render()
         {
             index += m_dial.size();
         }
-        else if ( index >= m_dial.size() )
+        else if ( index >= static_cast<int>(m_dial.size()) )
         {
             index -= m_dial.size();
         }
@@ -298,16 +318,19 @@ Game::render()
         if ( row > 50 ) row = 50;
     }
 
-    // TODO: Toggle between cursor and d-board - make cursor flash
-    // TODO: Forward predictions for all items in the dial
-    // TODO: Train model
-    // TODO: Cursor-relative versus paper-relative
-    // TODO: Feed paper in
-    // TODO: Move paper when shift pressed
-    // TODO: Gamepad controls
+    // TODO: Train model (Train, Reset, Continue, Quit)
     // TODO: Save content to a file
+    // TODO: Forward predictions for all items in the dial
+    // TODO: Gamepad controls
+    // TODO: Finish the SFX
+    // TODO: Splash / Icon
+    // TODO: Toggle between cursor and d-board - make cursor flash, fix graphics
+    // TODO: Smooth cursor movement, including carriage-return
+    // TODO: Viewport movement: Cursor-relative versus paper-relative
+    // TODO: Feed paper in (with sfx)
+    // TODO: Move paper when shift pressed
     // TODO: Hook up Wiimote
-    // TODO: Introduction tutorial
+    // TODO: Instructions / tutorial
 }
 
 //------------------------------------------------------------------------------

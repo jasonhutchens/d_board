@@ -21,10 +21,6 @@ class Config
     int bpp;
     bool fullScreen;
     bool sound;
-    std::string userName;
-    int menu;
-    bool vibrate;
-    bool leaderboard;
 };
 
 #endif

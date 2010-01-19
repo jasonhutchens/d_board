@@ -3,7 +3,6 @@
 #include <engine.hpp>
 #include <entity_manager.hpp>
 #include <splash.hpp>
-#include <menu.hpp>
 #include <menu_item.hpp>
 #include <game.hpp>
 #include <debug.hpp>
@@ -136,7 +135,6 @@ void
 Engine::start()
 {
     m_contexts.push_back( new Splash() );
-    m_contexts.push_back( new Menu() );
     m_contexts.push_back( new Game() );
 
     m_pm = new hgeParticleManager();
@@ -313,7 +311,7 @@ Engine::updateGUI( float dt, hgeGUI * gui, int default_focus, int max )
 
     if ( select == 0 )
     {
-        select = static_cast< Control >( gui->Update( dt ) );
+        select = gui->Update( dt );
     }
 
     return select;
@@ -582,8 +580,7 @@ Engine::_update()
             case EC_QUIT:
             {
                 m_gui->SetFocus( 1 );
-                switchContext( STATE_MENU );
-                return false;
+                return true;
                 break;
             }
         }
@@ -708,15 +705,15 @@ Engine::_initGraphics()
 {
     m_hge = hgeCreate( HGE_VERSION );
 
-    m_hge->System_SetState( HGE_LOGFILE, "kranzky.log" );
-    m_hge->System_SetState( HGE_INIFILE, "kranzky.ini" );
+    m_hge->System_SetState( HGE_LOGFILE, "dboard.log" );
+    m_hge->System_SetState( HGE_INIFILE, "dboard.ini" );
     m_hge->System_SetState( HGE_FOCUSLOSTFUNC, s_loseFocus );
     m_hge->System_SetState( HGE_FOCUSGAINFUNC, s_gainFocus );
     m_hge->System_SetState( HGE_GFXRESTOREFUNC, s_restore );
     m_hge->System_SetState( HGE_FRAMEFUNC, s_update );
     m_hge->System_SetState( HGE_RENDERFUNC, s_render );
     m_hge->System_SetState( HGE_EXITFUNC, s_exit );
-    m_hge->System_SetState( HGE_TITLE, "+++ D B O A R D v0.1 +++" );
+    m_hge->System_SetState( HGE_TITLE, "+++ D B O A R D +++" );
     m_hge->System_SetState( HGE_ICON, MAKEINTRESOURCE( IDI_ICON1 ) );
     m_hge->System_SetState( HGE_SHOWSPLASH, false );
     m_hge->System_SetState( HGE_FPS, HGEFPS_UNLIMITED );

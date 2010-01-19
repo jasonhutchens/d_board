@@ -28,10 +28,9 @@ public:
     void copyHand();
 
     void swapHand();
-
-private:
     bool includes( char symbol );
 
+private:
     unsigned int m_order;
     const char * m_alphabet;
     char m_escape;

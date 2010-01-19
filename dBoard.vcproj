@@ -240,10 +240,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\menu.hpp"
-				>
-			</File>
-			<File
 				RelativePath=".\menu_item.hpp"
 				>
 			</File>
@@ -371,10 +367,6 @@
 			</File>
 			<File
 				RelativePath=".\game.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\menu.cpp"
 				>
 			</File>
 			<File
