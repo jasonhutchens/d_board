@@ -19,7 +19,7 @@
 Game::Game()
     :
     Context(),
-    m_brain( 5 ),
+    m_brain( 6 ),
     m_lines(),
     m_dial(),
     m_current(),
@@ -89,7 +89,7 @@ Game::init()
 	m_brain.select( ' ' );
 	m_row = 8;
 	m_col = 5;
-	_clearCurrent();
+	_clearCurrent(1);
 	m_current[m_brain.getMode()] = 1;
 }
 
@@ -123,12 +123,25 @@ Game::update( float dt )
 
     // Implement normal typing
     char byte( hge->Input_GetChar() );
-    if ( m_brain.isValid( byte ) && m_row < 49 )
+    if ( m_brain.isValid( byte ) && m_row < 51 )
     {
         m_brain.select( byte );
         _clearCurrent();
-        hge->Effect_Play( rm->GetEffect( "confirm" ) );
+        hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
         m_row += 1;
+		if ( m_row == 51 )
+		{
+			m_lines.push_back( m_brain.getBuffer() );
+			m_brain.accept();
+			_clearCurrent();
+			m_row = 0;
+			m_col += 1;
+			if ( m_col > 11 )
+			{
+				m_col = 0;
+				m_lines.clear();
+			}	
+		}
     }
     // Backspace
     if ( hge->Input_GetKey() == HGEK_BACKSPACE &&
@@ -136,7 +149,7 @@ Game::update( float dt )
     {
         m_brain.remove();
         _clearCurrent();
-        hge->Effect_Play( rm->GetEffect( "confirm" ) );
+        hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
         m_row -= 1;
     }
     // Return
@@ -145,7 +158,7 @@ Game::update( float dt )
         m_lines.push_back( m_brain.getBuffer() );
         m_brain.accept();
         _clearCurrent();
-        hge->Effect_Play( rm->GetEffect( "confirm" ) );
+        hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
         m_row = 0;
         m_col += 1;
 		if ( m_col > 11 )
@@ -194,7 +207,11 @@ Game::update( float dt )
         {
             m_current[m_brain.getMode()] = m_dial.size() - 1;
         }
-		hge->Effect_Play( rm->GetEffect( "select" ) );
+		if ( m_current[m_brain.getMode()] < m_dialSize )
+		{
+			_clearCurrent( m_current[m_brain.getMode()] );
+		}
+		hge->Effect_PlayEx( rm->GetEffect( "select" ), 10 );
     }
     if ( hge->Input_GetKey() == HGEK_DOWN )
     {
@@ -203,15 +220,32 @@ Game::update( float dt )
         {
             m_current[m_brain.getMode()] = 0;
         }
-		hge->Effect_Play( rm->GetEffect( "select" ) );
+		if ( m_current[m_brain.getMode()] < m_dialSize )
+		{
+			_clearCurrent( m_current[m_brain.getMode()] );
+		}
+		hge->Effect_PlayEx( rm->GetEffect( "select" ), 10 );
     }
-    if ( hge->Input_GetKey() == HGEK_RIGHT && m_row < 49 )
+    if ( hge->Input_GetKey() == HGEK_RIGHT && m_row < 51 )
     {
         char byte( m_dial[m_current[m_brain.getMode()]] );
         m_brain.select( byte );
         _clearCurrent();
         m_row += 1;
-        hge->Effect_Play( rm->GetEffect( "confirm" ) );
+        hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
+		if ( m_row == 51 )
+		{
+			m_lines.push_back( m_brain.getBuffer() );
+			m_brain.accept();
+			_clearCurrent();
+			m_row = 0;
+			m_col += 1;
+			if ( m_col > 11 )
+			{
+				m_col = 0;
+				m_lines.clear();
+			}	
+		}
     }
     if ( hge->Input_GetKey() == HGEK_LEFT &&
          m_brain.getBuffer()[0] != '\0' )
@@ -219,7 +253,7 @@ Game::update( float dt )
         m_brain.remove();
         _clearCurrent();
         m_row -= 1;
-        hge->Effect_Play( rm->GetEffect( "confirm" ) );
+        hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
     }
 
     return false;
@@ -312,13 +346,13 @@ Game::render()
     const double * probs( m_brain.getProbs() );
     for ( unsigned int i = 0; i < strlen( future ); ++i )
     {
+        if ( row > 50 ) break;
         hgeColorRGB color( 0.0f, 0.0f, 0.0f, static_cast< float >( probs[i] ) );
         font->SetColor( color.GetHWColor() );
         font->printf( -50.0f + 2.0f * row,
                       top + 4.75f * col,
                       HGETEXT_LEFT, "%c", future[i] );
         row += 1;
-        if ( row > 50 ) break;
     }
 
     // TODO: Forward predictions for all items in the dial
@@ -329,12 +363,12 @@ Game::render()
 //------------------------------------------------------------------------------
 //private:
 //------------------------------------------------------------------------------
-void Game::_clearCurrent()
+void Game::_clearCurrent( int index )
 {
-    m_current[Brain::MODE_NORMAL] = 0;
-    m_current[Brain::MODE_SHIFT] = 0;
-    m_current[Brain::MODE_ALT] = 0;
-    m_current[Brain::MODE_BOTH] = 0;
+    m_current[Brain::MODE_NORMAL] = index;
+    m_current[Brain::MODE_SHIFT] = index;
+    m_current[Brain::MODE_ALT] = index;
+    m_current[Brain::MODE_BOTH] = index;
 }
 
 //------------------------------------------------------------------------------

@@ -31,7 +31,7 @@ class Game : public Context
     virtual void render();
 
   private:
-    void _clearCurrent();
+    void _clearCurrent( int index = 0 );
     bool _inPrevious( char item, int num );
     bool _inNext( int index, int num );
 
