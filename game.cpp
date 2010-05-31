@@ -88,6 +88,7 @@ Game::init()
 	m_brain.select( 't' );
 	m_brain.select( ' ' );
 	m_row = 8;
+	m_col = 5;
 	_clearCurrent();
 	m_current[m_brain.getMode()] = 1;
 }
@@ -147,7 +148,7 @@ Game::update( float dt )
         hge->Effect_Play( rm->GetEffect( "confirm" ) );
         m_row = 0;
         m_col += 1;
-		if ( m_col > 12 )
+		if ( m_col > 11 )
 		{
 			m_col = 0;
 			m_lines.clear();
@@ -274,7 +275,7 @@ Game::render()
 
     // draw the cursor, showing a dial of characters
     hgeSprite * cursor( rm->GetSprite( "cursor" ) );
-    cursor->RenderEx( -50.0f + 2.0f * row + 1.0f, top + 4.75f * col + 5.5f,
+    cursor->RenderEx( -50.0f + 2.0f * row + 0.7f, top + 4.75f * col + 5.5f,
                       0.0f, 0.06f, 0.13f );
     if ( m_dial.size() < 5 )
     {
