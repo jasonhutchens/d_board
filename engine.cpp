@@ -510,6 +510,7 @@ bool
 Engine::_update()
 {
     float dt( m_hge->Timer_GetDelta() );
+	bool was_paused( false );
 
     if ( m_state == STATE_GAME )
     {
@@ -574,6 +575,7 @@ Engine::_update()
             case EC_CONTINUE:
             {
                 m_paused = false;
+				was_paused = true;
                 m_gui->SetFocus( 1 );
                 break;
             }
@@ -595,8 +597,10 @@ Engine::_update()
     m_controller.update( dt );
 
     m_b2d->Step( dt, 10 );
+	if ( was_paused ) m_paused = true;
     bool retval( m_contexts[m_state]->update( dt ) );
-    m_pm->Update( dt );
+	if ( was_paused ) m_paused = false;
+	m_pm->Update( dt );
 
     if ( m_dd->GetFlags() != 0 )
     {

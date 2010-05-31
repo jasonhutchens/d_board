@@ -24,7 +24,8 @@ Game::Game()
     m_dial(),
     m_current(),
     m_row( 0 ),
-    m_col( 0 )
+    m_col( 0 ),
+	m_dialSize( 0 )
 {
 }
 
@@ -63,24 +64,32 @@ Game::init()
 
     m_row = 0;
     m_col = 0;
+	m_dialSize = 0;
 
-    /*
-     * Load the corpus and train the model. This should happen in a thread so we
-     * can display a progress bar or something.
-     */
-    std::fstream file( "corpus.txt", std::ios::in |
-                                     std::ios::binary |
-                                     std::ios::ate );
-    if ( file.is_open() )
+	m_lines.push_back( "Welcome to the d-board, by RocketHands!\n" );
+	m_lines.push_back( "You can enter text using the cursor keys, or by\n" );
+	m_lines.push_back( "plugging in a game controller.\n" );
+	m_lines.push_back( "Try entering \"the cat sat on the mat\" below:\n" );
+
+	for( std::vector< std::string >::iterator i = m_lines.begin();
+         i != m_lines.end(); ++i )
     {
-        std::ifstream::pos_type size( file.tellg() );
-        char * blob( new char [size] );
-        file.seekg( 0, std::ios::beg );
-        file.read( blob, size );
-        file.close();
-        m_brain.learn( blob );
-        delete [] blob;
-    }
+		m_brain.learn( i->c_str() );
+	}
+
+	m_lines.push_back( "" );
+
+	m_brain.select( 't' );
+	m_brain.select( 'h' );
+	m_brain.select( 'e' );
+	m_brain.select( ' ' );
+	m_brain.select( 'c' );
+	m_brain.select( 'a' );
+	m_brain.select( 't' );
+	m_brain.select( ' ' );
+	m_row = 8;
+	_clearCurrent();
+	m_current[m_brain.getMode()] = 1;
 }
 
 //------------------------------------------------------------------------------
@@ -113,18 +122,11 @@ Game::update( float dt )
 
     // Implement normal typing
     char byte( hge->Input_GetChar() );
-    if ( m_brain.isValid( byte ) )
+    if ( m_brain.isValid( byte ) && m_row < 49 )
     {
         m_brain.select( byte );
         _clearCurrent();
-        if ( byte == ' ' )
-        {
-            hge->Effect_PlayEx( rm->GetEffect( "space" ), 15 );
-        }
-        else
-        {
-            hge->Effect_Play( rm->GetEffect( "letter" ) );
-        }
+        hge->Effect_Play( rm->GetEffect( "confirm" ) );
         m_row += 1;
     }
     // Backspace
@@ -133,6 +135,7 @@ Game::update( float dt )
     {
         m_brain.remove();
         _clearCurrent();
+        hge->Effect_Play( rm->GetEffect( "confirm" ) );
         m_row -= 1;
     }
     // Return
@@ -141,23 +144,26 @@ Game::update( float dt )
         m_lines.push_back( m_brain.getBuffer() );
         m_brain.accept();
         _clearCurrent();
-        hge->Effect_Play( rm->GetEffect( "return" ) );
+        hge->Effect_Play( rm->GetEffect( "confirm" ) );
         m_row = 0;
         m_col += 1;
-    }
-    if ( m_row == 40 )
-    {
-        hge->Effect_Play( rm->GetEffect( "bell" ) );
+		if ( m_col > 12 )
+		{
+			m_col = 0;
+			m_lines.clear();
+		}
     }
 
     float threshold( 1.0f / strlen( m_brain.getAlphabet() ) );
 
     // Populate the dial without repeating the same symbol in a sliding window
     m_dial.clear();
+	m_dialSize = 0;
     const char * choice( m_brain.predictChoice( threshold ) );
     for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 4; ++i )
     {
         m_dial.push_back( choice[i] );
+		m_dialSize += 1;
     }
     const char * alphabet( m_brain.getAlphabet() );
     for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
@@ -187,6 +193,7 @@ Game::update( float dt )
         {
             m_current[m_brain.getMode()] = m_dial.size() - 1;
         }
+		hge->Effect_Play( rm->GetEffect( "select" ) );
     }
     if ( hge->Input_GetKey() == HGEK_DOWN )
     {
@@ -195,25 +202,15 @@ Game::update( float dt )
         {
             m_current[m_brain.getMode()] = 0;
         }
+		hge->Effect_Play( rm->GetEffect( "select" ) );
     }
-    if ( hge->Input_GetKey() == HGEK_RIGHT )
+    if ( hge->Input_GetKey() == HGEK_RIGHT && m_row < 49 )
     {
         char byte( m_dial[m_current[m_brain.getMode()]] );
         m_brain.select( byte );
         _clearCurrent();
         m_row += 1;
-        if ( byte == ' ' )
-        {
-            hge->Effect_PlayEx( rm->GetEffect( "space" ), 15 );
-        }
-        else if ( byte >= 'A' && byte <= 'Z' )
-        {
-            hge->Effect_Play( rm->GetEffect( "shift_letter" ) );
-        }
-        else
-        {
-            hge->Effect_Play( rm->GetEffect( "letter" ) );
-        }
+        hge->Effect_Play( rm->GetEffect( "confirm" ) );
     }
     if ( hge->Input_GetKey() == HGEK_LEFT &&
          m_brain.getBuffer()[0] != '\0' )
@@ -221,6 +218,7 @@ Game::update( float dt )
         m_brain.remove();
         _clearCurrent();
         m_row -= 1;
+        hge->Effect_Play( rm->GetEffect( "confirm" ) );
     }
 
     return false;
@@ -230,19 +228,19 @@ Game::update( float dt )
 void
 Game::render()
 {
+	HGE * hge( Engine::hge() );
     hgeResourceManager * rm( Engine::rm() );
     hgeFont * font( rm->GetFont( "love" ) );
     ViewPort * vp( Engine::vp() );
 
-    hgeSprite * paper( rm->GetSprite( "paper" ) );
+	hge->Gfx_Clear( 0x00AAAAAA );
 
     vp->setTransform();
-
-    paper->RenderEx( 0, 50, 0.0f, 0.15f );
 
     font->SetColor( 0xF0000000 );
     font->SetScale( 0.1f );
 
+	float top( -32.0f );
     unsigned int row( 0 );
     unsigned int col( 0 );
 
@@ -254,7 +252,7 @@ Game::render()
         for ( unsigned int j = 0; j < strlen( line ); ++j )
         {
             font->printf( -50.0f + 2.0f * row,
-                          -9.5f + 4.75f * col,
+                          top + 4.75f * col,
                           HGETEXT_LEFT, "%c", line[j] );
             row += 1;
             if ( row > 50 ) row = 50;
@@ -268,7 +266,7 @@ Game::render()
     for ( unsigned int i = 0; i < strlen( past ); ++i )
     {
         font->printf( -50.0f + 2.0f * row,
-                      -9.5f + 4.75f * col,
+                      top + 4.75f * col,
                       HGETEXT_LEFT, "%c", past[i] );
         row += 1;
         if ( row > 50 ) row = 50;
@@ -276,7 +274,7 @@ Game::render()
 
     // draw the cursor, showing a dial of characters
     hgeSprite * cursor( rm->GetSprite( "cursor" ) );
-    cursor->RenderEx( -50.0f + 2.0f * row + 1.0f, -9.5f + 4.75f * col + 5.5f,
+    cursor->RenderEx( -50.0f + 2.0f * row + 1.0f, top + 4.75f * col + 5.5f,
                       0.0f, 0.06f, 0.13f );
     if ( m_dial.size() < 5 )
     {
@@ -296,10 +294,14 @@ Game::render()
         }
         hgeSprite * sprite( font->GetSprite( m_dial[index] ) );
         hgeColorRGB color( 1.0f, 1.0f, 1.0f, ( offset == 0 ) ? 1.0f : 0.8f );
+		if ( index >= 0 && index < m_dialSize )
+		{
+			color.b = 0.3f;
+		}
         sprite->SetColor( color.GetHWColor() );
         float scale( 1.0f );
         sprite->RenderEx( -50.0f + 2.0f * row,
-                          -9.5f + 4.75f * col + 2.5f * offset,
+                          top + 4.75f * col + 2.5f * offset,
                           0.0f, 0.1f, 0.1f * scale );
     }
     row += 1;
@@ -312,25 +314,15 @@ Game::render()
         hgeColorRGB color( 0.0f, 0.0f, 0.0f, static_cast< float >( probs[i] ) );
         font->SetColor( color.GetHWColor() );
         font->printf( -50.0f + 2.0f * row,
-                      -9.5f + 4.75f * col,
+                      top + 4.75f * col,
                       HGETEXT_LEFT, "%c", future[i] );
         row += 1;
-        if ( row > 50 ) row = 50;
+        if ( row > 50 ) break;
     }
 
-    // TODO: Train model (Train, Reset, Continue, Quit)
-    // TODO: Save content to a file
     // TODO: Forward predictions for all items in the dial
     // TODO: Gamepad controls
-    // TODO: Finish the SFX
-    // TODO: Splash / Icon
-    // TODO: Toggle between cursor and d-board - make cursor flash, fix graphics
-    // TODO: Smooth cursor movement, including carriage-return
-    // TODO: Viewport movement: Cursor-relative versus paper-relative
-    // TODO: Feed paper in (with sfx)
-    // TODO: Move paper when shift pressed
-    // TODO: Hook up Wiimote
-    // TODO: Instructions / tutorial
+    // TODO: Icon
 }
 
 //------------------------------------------------------------------------------

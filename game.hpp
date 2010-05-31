@@ -41,6 +41,7 @@ class Game : public Context
     int m_current[4];
     int m_row;
     int m_col;
+	int m_dialSize;
 };
 
 #endif
