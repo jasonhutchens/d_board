@@ -25,7 +25,8 @@ Game::Game()
     m_current(),
     m_row( 0 ),
     m_col( 0 ),
-	m_dialSize( 0 )
+	m_dialSize( 0 ),
+	m_coolDown( 1 )
 {
 }
 
@@ -65,6 +66,7 @@ Game::init()
     m_row = 0;
     m_col = 0;
 	m_dialSize = 0;
+	m_coolDown = 1;
 
 	m_lines.push_back( "Welcome to the d-board, by RocketHands!\n" );
 	m_lines.push_back( "You can enter text using the cursor keys, or by\n" );
@@ -89,8 +91,8 @@ Game::init()
 	m_brain.select( ' ' );
 	m_row = 8;
 	m_col = 5;
-	_clearCurrent(1);
-	m_current[m_brain.getMode()] = 1;
+	_clearCurrent();
+	m_current[m_brain.getMode()] = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -115,9 +117,11 @@ Game::update( float dt )
     }
 
     // Call m_brain.setMode based on modifier keys / buttons
-    Brain::Mode ctrl( hge->Input_GetKeyState( HGEK_CTRL )
+    Brain::Mode ctrl( ( hge->Input_GetKeyState( HGEK_CTRL ) ||
+		                pad.isConnected() && pad.getButtonState( XPAD_BUTTON_RIGHT_SHOULDER ) )
                       ? Brain::MODE_ALT : Brain::MODE_NORMAL );
-    Brain::Mode shift( hge->Input_GetKeyState( HGEK_SHIFT )
+    Brain::Mode shift( ( hge->Input_GetKeyState( HGEK_SHIFT ) ||
+		                 pad.isConnected() && pad.getButtonState( XPAD_BUTTON_LEFT_SHOULDER ) )
                       ? Brain::MODE_SHIFT : Brain::MODE_NORMAL );
     m_brain.setMode( static_cast< Brain::Mode >( ctrl + shift ) );
 
@@ -153,7 +157,9 @@ Game::update( float dt )
         m_row -= 1;
     }
     // Return
-    if ( hge->Input_GetKey() == HGEK_ENTER )
+
+    if ( hge->Input_GetKey() == HGEK_ENTER ||
+		 pad.isConnected() && pad.buttonDown( XPAD_BUTTON_A ) )
     {
         m_lines.push_back( m_brain.getBuffer() );
         m_brain.accept();
@@ -168,40 +174,27 @@ Game::update( float dt )
 		}
     }
 
-    float threshold( 1.0f / strlen( m_brain.getAlphabet() ) );
+	bool isDown( pad.isConnected() &&
+			( pad.getButtonState( XPAD_BUTTON_DPAD_UP ) ||
+			  pad.getButtonState( XPAD_BUTTON_DPAD_DOWN ) ||
+			  pad.getButtonState( XPAD_BUTTON_DPAD_LEFT ) ||
+			  pad.getButtonState( XPAD_BUTTON_DPAD_RIGHT ) ) );
+	if ( m_coolDown > 0 && isDown )
 
-    // Populate the dial without repeating the same symbol in a sliding window
-    m_dial.clear();
-	m_dialSize = 0;
-    const char * choice( m_brain.predictChoice( threshold ) );
-    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 4; ++i )
-    {
-        m_dial.push_back( choice[i] );
-		m_dialSize += 1;
-    }
-    const char * alphabet( m_brain.getAlphabet() );
-    for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
-    {
-        // Don't add if it exists in the previous 5.
-        if ( _inPrevious( alphabet[i], 5 ) )
-        {
-            continue;
-        }
-        m_dial.push_back( alphabet[i] );
-    }
-    // And now pop off elements that appear in the next 5.
-    for ( int offset = 1; offset <= 5; ++offset )
-    {
-        int index( m_dial.size() - offset );
-        if ( _inNext( index, 5 ) )
-        {
-            m_dial.erase( m_dial.begin() + index );
-        }
-    }
+	{
+		m_coolDown -= 1;
+	}
+	else if ( isDown )
+	{
+		m_coolDown = 3;
+	}
 
+	bool vert( false );
     // Implement cursor keys
-    if ( hge->Input_GetKey() == HGEK_UP )
+    if ( hge->Input_GetKey() == HGEK_UP ||
+		 pad.isConnected() && pad.getButtonState( XPAD_BUTTON_DPAD_UP ) && m_coolDown == 0 )
     {
+		vert = true;
         m_current[m_brain.getMode()] -= 1;
         if ( m_current[m_brain.getMode()] < 0 )
         {
@@ -211,10 +204,16 @@ Game::update( float dt )
 		{
 			_clearCurrent( m_current[m_brain.getMode()] );
 		}
+		if ( m_brain.getMode() == 0 || m_brain.getMode() == 1 )
+		{
+			m_current[1 - m_brain.getMode()] = m_current[m_brain.getMode()]; 
+		}
 		hge->Effect_PlayEx( rm->GetEffect( "select" ), 10 );
     }
-    if ( hge->Input_GetKey() == HGEK_DOWN )
+    if ( hge->Input_GetKey() == HGEK_DOWN ||
+		 pad.isConnected() && pad.getButtonState( XPAD_BUTTON_DPAD_DOWN ) && m_coolDown == 0 )
     {
+		vert = true;
         m_current[m_brain.getMode()] += 1;
         if ( m_current[m_brain.getMode()] >= static_cast<int>(m_dial.size()) )
         {
@@ -224,9 +223,15 @@ Game::update( float dt )
 		{
 			_clearCurrent( m_current[m_brain.getMode()] );
 		}
+		if ( m_brain.getMode() == 0 || m_brain.getMode() == 1 )
+		{
+			m_current[1 - m_brain.getMode()] = m_current[m_brain.getMode()]; 
+		}
 		hge->Effect_PlayEx( rm->GetEffect( "select" ), 10 );
     }
-    if ( hge->Input_GetKey() == HGEK_RIGHT && m_row < 51 )
+    if ( ( hge->Input_GetKey() == HGEK_RIGHT ||
+		   pad.isConnected() && pad.getButtonState( XPAD_BUTTON_DPAD_RIGHT ) && m_coolDown == 0 )
+		   && m_row < 51 && ! vert )
     {
         char byte( m_dial[m_current[m_brain.getMode()]] );
         m_brain.select( byte );
@@ -247,8 +252,9 @@ Game::update( float dt )
 			}	
 		}
     }
-    if ( hge->Input_GetKey() == HGEK_LEFT &&
-         m_brain.getBuffer()[0] != '\0' )
+    if ( ( hge->Input_GetKey() == HGEK_LEFT ||
+		   pad.isConnected() && pad.getButtonState( XPAD_BUTTON_DPAD_LEFT ) && m_coolDown == 0 ) &&
+         m_brain.getBuffer()[0] != '\0' && ! vert )
     {
         m_brain.remove();
         _clearCurrent();
@@ -256,7 +262,58 @@ Game::update( float dt )
         hge->Effect_PlayEx( rm->GetEffect( "confirm" ), 5 );
     }
 
-    return false;
+	if ( pad.isConnected() )
+	{
+		if ( pad.buttonUp( XPAD_BUTTON_DPAD_UP ) ||
+			 pad.buttonUp( XPAD_BUTTON_DPAD_DOWN ) ||
+			 pad.buttonUp( XPAD_BUTTON_DPAD_LEFT ) ||
+			 pad.buttonUp( XPAD_BUTTON_DPAD_RIGHT ) )
+		{
+			m_coolDown = 1;
+		}
+		if ( pad.buttonDown( XPAD_BUTTON_DPAD_UP ) ||
+			 pad.buttonDown( XPAD_BUTTON_DPAD_DOWN ) ||
+			 pad.buttonDown( XPAD_BUTTON_DPAD_LEFT ) ||
+			 pad.buttonDown( XPAD_BUTTON_DPAD_RIGHT ) )
+		{
+			m_coolDown = 30;
+		}
+	}
+			
+    float threshold( 0.0625f );
+
+    // Populate the dial without repeating the same symbol in a sliding window
+    m_dial.clear();
+	m_dialSize = 0;
+    const char * choice( m_brain.predictChoice( threshold ) );
+    for ( unsigned int i = 0; i < strlen( choice ) && m_dial.size() < 4; ++i )
+    {
+        m_dial.push_back( choice[i] );
+		m_dialSize += 1;
+    }
+    const char * alphabet( m_brain.getAlphabet() );
+    for ( unsigned int i = 0; i < strlen( alphabet ); ++i )
+    {
+        // Don't add if it exists in the previous 5.
+        if ( _inPrevious( alphabet[i], 5 ) )
+        {
+            //continue;
+        }
+        m_dial.push_back( alphabet[i] );
+    }
+    // And now pop off elements that appear in the next 5.
+    for ( int offset = 1; offset <= 5; ++offset )
+    {
+        int index( m_dial.size() - offset );
+        if ( _inNext( index, 5 ) )
+        {
+            //m_dial.erase( m_dial.begin() + index );
+        }
+    }
+
+	m_brain.predictFuture( m_dial[m_current[m_brain.getMode()]] );
+
+	return false;
 }
 
 //------------------------------------------------------------------------------
@@ -290,13 +347,14 @@ Game::render()
                           top + 4.75f * col,
                           HGETEXT_LEFT, "%c", line[j] );
             row += 1;
-            if ( row > 50 ) row = 50;
+            if ( row > 50 ) break;
         }
         col += 1;
         row = 0;
     }
 
     // draw what we've written this far: m_brain.getBuffer();
+	row = 0;
     const char * past( m_brain.getBuffer() );
     for ( unsigned int i = 0; i < strlen( past ); ++i )
     {
@@ -304,8 +362,9 @@ Game::render()
                       top + 4.75f * col,
                       HGETEXT_LEFT, "%c", past[i] );
         row += 1;
-        if ( row > 50 ) row = 50;
+        if ( row > 50 ) break;
     }
+	row = strlen( past );
 
     // draw the cursor, showing a dial of characters
     hgeSprite * cursor( rm->GetSprite( "cursor" ) );
@@ -342,8 +401,8 @@ Game::render()
     row += 1;
 
     // draw a prediction of what we're likely to write next
-    const char * future( m_brain.predictFuture( m_dial[current] ) );
-    const double * probs( m_brain.getProbs() );
+	const char * future( m_brain.getText2() );
+    const double * probs( m_brain.getProbs2() );
     for ( unsigned int i = 0; i < strlen( future ); ++i )
     {
         if ( row > 50 ) break;
@@ -354,10 +413,6 @@ Game::render()
                       HGETEXT_LEFT, "%c", future[i] );
         row += 1;
     }
-
-    // TODO: Forward predictions for all items in the dial
-    // TODO: Gamepad controls
-    // TODO: Icon
 }
 
 //------------------------------------------------------------------------------

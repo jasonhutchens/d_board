@@ -720,7 +720,7 @@ Engine::_initGraphics()
     m_hge->System_SetState( HGE_TITLE, "The d-board, by RocketHands" );
     m_hge->System_SetState( HGE_ICON, MAKEINTRESOURCE( IDI_ICON1 ) );
     m_hge->System_SetState( HGE_SHOWSPLASH, false );
-    m_hge->System_SetState( HGE_FPS, HGEFPS_UNLIMITED );
+    m_hge->System_SetState( HGE_FPS, HGEFPS_VSYNC );
 
     m_config.init();
     _setBestScreenMode();

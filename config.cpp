@@ -19,7 +19,7 @@ Config::Config()
 #ifdef _DEBUG
     fullScreen( false ),
 #else
-    fullScreen( false ),
+    fullScreen( true ),
 #endif
     sound( true )
 {

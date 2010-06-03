@@ -42,6 +42,7 @@ class Game : public Context
     int m_row;
     int m_col;
 	int m_dialSize;
+	int m_coolDown;
 };
 
 #endif

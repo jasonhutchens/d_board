@@ -72,7 +72,7 @@ Splash::render()
     setBorder( 0xFF000000 );
     sprite = rm->GetSprite( "developer" );
 
-    float scale( 0.7f + m_timer / 60.0f );
+    float scale( 1.0f + m_timer / 60.0f );
     sprite->RenderEx( 0.5f * width, 0.5f * height, 0.0f, scale );
 }
 

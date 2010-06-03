@@ -32,13 +32,17 @@ Brain::Brain( unsigned int order = 5 )
     m_buffer( 0 ),
     m_size( 0 ),
     m_trie( 0 ),
-    m_tmp( 0 ),
-    m_probs( 0 )
+    m_tmp1( 0 ),
+	m_tmp2( 0 ),
+    m_probs1( 0 ),
+	m_probs2( 0 )
 {
     m_buffer = new char[ MAX_SIZE ];
     m_trie = new Trie( order, UNIVERSE, ESCAPE );
-    m_tmp = new char[ 256 ];
-    m_probs = new double[ 256 ];
+    m_tmp1 = new char[ 256 ];
+    m_tmp2 = new char[ 256 ];
+    m_probs1 = new double[ 256 ];
+    m_probs2 = new double[ 256 ];
     assert( m_buffer );
     m_buffer[0] = '\0';
     for ( unsigned int i = 0; i < m_trie->getOrder(); ++i )
@@ -52,8 +56,10 @@ Brain::~Brain()
 {
     delete [] m_buffer;
     delete m_trie;
-    delete [] m_tmp;
-    delete [] m_probs;
+    delete [] m_tmp1;
+	delete [] m_tmp2;
+    delete [] m_probs1;
+	delete [] m_probs2;
 }
 
 //------------------------------------------------------------------------------
@@ -130,11 +136,11 @@ const char * Brain::predictChoice( double probability )
         {
             break;
         }
-        m_probs[index] = dist->get(i).m_value;
-        m_tmp[index++] = dist->get(i).m_symbol;
+        m_probs1[index] = dist->get(i).m_value;
+        m_tmp1[index++] = dist->get(i).m_symbol;
     }
-    m_tmp[index] = '\0';
-    return m_tmp;
+    m_tmp1[index] = '\0';
+    return m_tmp1;
 }
 
 //------------------------------------------------------------------------------
@@ -164,22 +170,35 @@ const char * Brain::predictFuture( char selected, double probability )
         total *= dist->get(0).m_value;
         if ( total >= probability )
         {
-            m_probs[index] = total;
-            m_tmp[index] = dist->get(0).m_symbol;
-            m_trie->walk( m_tmp[index++] );
+            m_probs2[index] = total;
+            m_tmp2[index] = dist->get(0).m_symbol;
+            m_trie->walk( m_tmp2[index++] );
         }
     }
     m_trie->swapHand();
-    m_tmp[index] = '\0';
-    return m_tmp;
+    m_tmp2[index] = '\0';
+    return m_tmp2;
 }
 
 //------------------------------------------------------------------------------
-const double * Brain::getProbs()
+const double * Brain::getProbs1()
 {
-    return m_probs;
+    return m_probs1;
 }
 
+//------------------------------------------------------------------------------
+const double * Brain::getProbs2()
+{
+    return m_probs2;
+}
+const char * Brain::getText1()
+{
+	return m_tmp1;
+}
+const char * Brain::getText2()
+{
+	return m_tmp2;
+}
 //------------------------------------------------------------------------------
 const Dist * Brain::predict()
 {
